@@ -1,0 +1,9 @@
+commande de compilation :  
+
+g++ -std=c++17 main.cpp Carte.cpp Combat.cpp Ennemi.cpp Plateau.cpp Personnage.cpp Hand.cpp Jeux.cpp Joueur.cpp Objet.cpp GameManager.cpp Marchand.cpp -o test_jeu
+
+commande de lancement : 
+
+./test_jeu
+
+(sur windows ou n'importe quel ide je ne confirme pas que ça marchera mais vous connaissez vos outils)

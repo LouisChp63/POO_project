@@ -1,0 +1,327 @@
+@startuml
+skinparam classAttributeIconSize 0
+
+top to bottom direction
+skinparam wrapWidth 200
+
+
+' ===================== ENUMS =====================
+enum Couleur {
+    Coeur
+    Carreau
+    Trefle
+    Pique
+}
+
+enum Valeur {
+    Deux = 2
+    Trois = 3
+    Quatre = 4
+    Cinq
+    Six
+    Sept
+    Huit
+    Neuf
+    Dix
+    Valet
+    Dame
+    Roi
+    As = 14
+}
+
+enum CaseType {
+    Vide
+    Ennemi
+    Objet
+}
+
+' ===================== CARTE / HAND =====================
+class Carte {
+    - couleur : Couleur
+    - valeur : Valeur
+    
+    + Carte(valeur, couleur)
+    + ~Carte()
+    + getValeurInt() : Valeur
+    + getValeurInt() : int
+    + getCouleur() : Couleur
+    + afficherASCII() 
+    
+    + operator==(const Carte& other) : bool;
+    + operator>(const Carte& other) : bool;
+    + operator<(const Carte& other) : bool;
+}
+
+class Hand {
+    - cartes : vector<Carte>
+    + taille() : int
+    
+    + Hand()
+    + ~Hand()
+    + ajouterCarte(Carte&)
+    + contient(Carte&) : bool
+    + afficherAscii();
+    
+    + defausserCarte(int) : int
+    + sort()
+    + evaluerMain() : int
+    +	StrEvaluerMain(int) : string
+    + clear()
+    + getCartes() : vector<Carte>&;
+}
+
+abstract Jeux {
+    # cartes : vector<Carte>
+    
+    + ~Jeux()
+    + virtual reset()
+		+ virtual construireDeck()
+    + melanger()
+    + piocher() : Carte
+    + taille() : int;
+}
+
+class JeuStandard{
+		- construireDeck() override
+
+		+ JeuStandard();
+		+ reset() override;
+}
+class JeuRouge{
+		- construireDeck() override
+
+		+ JeuRouge();
+		+ reset() override;
+}
+
+class JeuVoleuse{
+		- construireDeck() override
+
+		+ JeuVoleuse();
+		+ reset() override;
+}
+
+Carte -- Couleur
+Carte -- Valeur
+Hand "1" o-- "5" Carte
+Jeux "1" *-- "*" Carte
+Joueur"1" *-- "1" Jeux
+Jeux <|-- JeuStandard
+Jeux <|-- JeuRouge
+Jeux <|-- JeuVoleuse
+
+' ===================== PERSONNAGES =====================
+
+class Personnage {
+    # position : int
+    # jetons : int
+    # dollars : int
+    # hand : Hand
+    # Personnage(int startPosition, int jetonsInit, int dollarsInit, Hand h);
+    
+    + ~Personnage()	 
+	  + ajouterJetons(int)
+	  + ajouterDollars(int)
+    + getPosition() : int
+    + getDollars() : int
+    + getJetons() : int 
+    + getHand() : Hand& 
+}
+
+Personnage <|-- Joueur
+Personnage <|-- Ennemi
+
+class Joueur {
+    # chance : int
+    # defausses : int
+    # inventaire : vector<Objet>
+    # jeux Jeux* 
+    # Joueur(int startPosition, int jetonsInit, int chanceInit, int defausse, int dollarsInit, Hand h, Jeux* j)
+    
+    + ~Joueur();
+    + piocherMain()
+    + defausserEtPiocher(vector<int>&)
+    + ajouterDefausse(int)
+    + jouerTour(Plateau&)
+    + lancerDe() : int
+    
+    + ajouterObjet(Objet&)
+		+ enleverObjet(int)
+		+ inventaireVide() : bool
+		+ afficherInventaire()
+		
+    + getObjet(int) : Objet*
+    + getDefausse() : int
+    + getChance() : int
+}
+
+class Ennemi {
+    # greed : int
+    # spawnRate : int
+    # nom : string
+    # fillHand(Hand& h)
+    
+    # 		Ennemi(int startPosition, int jetonsInit, int greedInit, int dollarsInit, int spawnRateInit, Hand h)
+    + ~Ennemi()
+    + creerAleatoire(int position) : Ennemi* 
+    + getNom() : string
+		+ getGreed() : int
+		+ getSpawnRate() : int
+}
+
+class Gobelin {
+    - mainFixeGobelin : static Hand
+    + Gobelin(int startPosition);
+}
+class Orc {
+    - mainFixeGobelin : static Hand
+    + Orc(int startPosition);
+}
+class Larry {
+    - mainFixeLarry : static Hand
+    + Larry(int startPosition);
+}
+
+class Chevalier{
+    +	Chevalier(int startPosition)
+}
+class Reine{
+    +	Reine(int startPosition)
+}
+class Voleuse{
+    +	Voleuse(int startPosition)
+}
+
+Ennemi <|-- Gobelin
+Ennemi <|-- Orc
+Ennemi <|-- Larry
+
+Joueur <|-- Chevalier
+Joueur <|-- Voleuse
+Joueur <|-- Reine
+' ===================== PLATEAU =====================
+class Plateau {
+    - taille : int
+    - cases : vector<CaseType>
+    - ennemis : vector<Ennemi*>
+    - objets : vector<Objet>
+    
+    + Plateau(int t)
+		+ ~Plateau()
+    + getTaille() : int
+    + getEnnemis() : const vector<Ennemi*>&
+    + isValib(int) : bool
+    + hasEnnemi(int) : bool
+    + hasObj(int) : bool 
+		
+		+ clearCase(int)
+		+ getEnnemi(int) : Ennemi*
+    + prendreObjet(int) : Objet
+}
+
+Plateau "1" *-- "*" Ennemi
+Plateau --> CaseType
+
+' ===================== COMBAT =====================
+
+class Combat {
+
+	-	joueur : Joueur&
+	-	ennemi : Ennemi& 
+		
+	-	miseJoueur : int
+	- miseEnnemi : int
+	- miseTotale : int
+	- miseNombre : int
+	- def : int
+	-	chance : int
+		
+	-	resultatCombat : bool
+	-	combatTermine : bool
+	-	joueurCouche : bool
+	- ennemiCouche : bool
+	
+	+ Combat(Joueur&, Ennemi&)
+	+ ~Combat()
+		
+	- initCombat()
+	- tourEnnemi(
+	- tourJoueur()
+	- evaluerResultat()
+	- resetCombat()
+	+ lancerCombat()
+	
+	+ miser(int)
+	+ demanderDefausse()
+	+ utiliserObj()
+	+ utiliserChance()
+	+ seCoucher()
+	+	finCombat(int)
+
+}
+Combat --> Joueur
+Combat --> Ennemi
+Combat --> Hand
+
+'================== GAME MANAGEr ===================
+
+class GameManager {
+    - joueur : Joueur*
+    - plateau : Plateau
+    - jeuTermine() : bool
+    
+    + GameManager()
+    + ~GameManager()
+    + generique()
+    + initParti()
+    + lancerParti()
+    + printPlateau()
+    
+}
+
+GameManager "1" *-- "1" Joueur
+GameManager "1" o-- "1" Marchand
+GameManager "1" o-- "1" Plateau
+' ===================== OBJETS =====================
+enum Type {
+  DoubleMise,
+	Apoil,
+	BonusJetons,
+  Fois2Dollars,
+  Defausse
+}
+
+class Objet {
+ - type : Type
+ 
+ + ~Objet()
+ +  Objet()
+ +	Objet(Type t)
+ +  getType() : Type
+ + toString() : std::string
+
+
+}
+
+class Marchand{
+
+    - stock : vector<Objet>
+    
+    + Marchand()
+    + ~Marchand()
+
+    + ajouterObjet(const Objet& obj)
+    + enleverObjet(int index)
+    + afficherStock()
+    + interagir(Joueur& joueur)
+}
+
+Plateau "1" o-- "*" Objet
+Marchand "1" o-- "*" Objet
+
+Objet --- Type
+
+
+
+
+@enduml
